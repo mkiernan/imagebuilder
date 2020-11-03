@@ -42,7 +42,7 @@ def main():
     subscriptionId = os.environ.get("SUBSCRIPTION_ID", None)
     credential = DefaultAzureCredential()
     location = 'westus2'
-    resourceGroupName = "mktmpgrp"
+    resourceGroupName = "mktmpgrp2"
     imageResourceGroupName = "mkimagegrp"
     subnetName = "compute"
     interfaceName = "interfaceName"
@@ -55,6 +55,7 @@ def main():
     vmName = "redisserver"
     vmssName = "redisclient"
     vmssInstances = 2
+    nsgName = "vmssnsg"
     loadbalancerName = "vmssloadbalancer"
     loadbalancerFrontEndIpConfName = "loadBalancerFrontEnd"
 
@@ -75,16 +76,42 @@ def main():
     subnet = networkClient.subnets.begin_create_or_update(
         resourceGroupName, networkName, subnetName, subnetDict).result()
 
+    sshRule = {"name": "default-allow-ssh", "protocol": "Tcp", "source_port_range": "*",
+               "destination_port_range": "22", "source_address_prefix": "*", 
+               "destination_address_prefix": "*", "access": "Allow", "priority": 1000,
+               "direction": "Inbound", "source_port_ranges": [], "destination_port_ranges": [],
+               "source_address_prefixes": [], "destination_address_prefixes": []
+    }
+    redisRule = {"name": "open-6379-80-redis", "protocol": "Tcp", "source_port_range": "*",
+               "destination_port_range": "6379-6380", "source_address_prefix": "*", 
+               "destination_address_prefix": "*", "access": "Allow", "priority": 900,
+               "direction": "Inbound", "source_port_ranges": [], "destination_port_ranges": [],
+               "source_address_prefixes": [], "destination_address_prefixes": []
+    }
+    nsgDict = {"id": nsgName, "location": location, "security_rules": [sshRule,redisRule]}
+    nsg = networkClient.network_security_groups.begin_create_or_update(
+        resourceGroupName, networkName, nsgDict).result()
+    logger.debug("NSG: %s" % nsg)
+    logger.debug("NSG.id: %s" % nsg.id)
+
     publicIpDict = {"location": 'westus2', "public_ip_allocation_method": "Static",
                     "public_ip_address_version": "IPV4", "sku": {"name": "Standard"}}
     publicIp = networkClient.public_ip_addresses.begin_create_or_update(
         resourceGroupName, "public_ip_address_name", publicIpDict).result()
 
-    nicDict = {'location': 'westus2', 'ip_configurations': [
-        {'name': 'ipconfig', 'subnet': {'id': subnet.id}, "public_ip_address": {"id": publicIp.id}}]}
+    nicDict = {'location': 'westus2',
+               'ip_configurations': [{
+                   'name': 'ipconfig', 'subnet': {'id': subnet.id}, 
+                   "public_ip_address": {"id": publicIp.id},
+                   "private_ip_allocation_method": "Dynamic"
+                   }],
+        "enableAcceleratedNetworking": True, 
+        "network_security_group": {"id": nsg.id},
+    }
+
     nic = networkClient.network_interfaces.begin_create_or_update(
         resourceGroupName, interfaceName, nicDict).result()
-    logger.debug("NIC:%s" % dir(nic))
+    logger.debug("NIC:%s" % nic)
 
     # -- create load balancer for vmss
     lbpublicIpDict = {"location": "westus2", "public_ip_allocation_method": "Static",
@@ -116,8 +143,7 @@ def main():
     inboundNATRule1 = {"name": "vmssNAT1", "frontend_ip_configuration": {"id": frontendIpConfId},
                       "protocol": "Tcp", "frontend_port": 50001, "backend_port": 22,
                        "idle_timeout_in_minutes": 4, "enable_floating_ip": False,
-                       "enable_tcp_reset": False
-                      }
+                       "enable_tcp_reset": False}
 
     inboundNATRule2 = {"name": "vmssNAT2", "frontend_ip_configuration": {"id": frontendIpConfId},
                        "protocol": "Tcp", "frontend_port": 50002, "backend_port": 22,
@@ -134,7 +160,7 @@ def main():
               "frontendIPConfigurations": [frontendIpConf],
               "backend_address_pools": [backendAddrPool],
               "load_balancing_rules": [], "probes": [],
-              "inbound_nat_rules": [inboundNATRule1, inboundNATRule2],
+#              "inbound_nat_rules": [inboundNATRule1, inboundNATRule2],
               "inbound_nat_pools": [inboundNATPool],
               "outbound_rules" : []
               }
@@ -186,6 +212,7 @@ def main():
                 "name": "vmssnic",
                 "primary": True,
                 "enable_accelerated_networking": True,
+                "network_security_group": {"id": nsg.id},
                 "ip_configurations": [{
                     "name": "vmssipconfig",
                     "subnet": {"id": subnet.id},
