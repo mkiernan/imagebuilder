@@ -1,0 +1,92 @@
+{
+    "type": "Microsoft.VirtualMachineImages",
+    "apiVersion": "2019-05-01-preview",
+    "location": "westus2",
+    "dependsOn": [],
+    "tags": {
+        "imagebuilderTemplate": "AzureImageBuilderSIG",
+        "userIdentity": "enabled"
+            },
+        "identity": {
+            "type": "UserAssigned",
+                    "userAssignedIdentities": {
+                    "/subscriptions/cf385b17-bfe0-4a92-8b27-5a2ac02848d2/resourcegroups/ibLinuxGalleryRG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/aibBuiUserId": {}
+                        
+                }
+                },
+    
+    "properties": {
+
+        "buildTimeoutInMinutes" : 80,
+
+        "vmProfile": 
+            {
+            "vmSize": "Standard_D2_v2",
+            "osDiskSizeGB": 0
+            },
+        
+        "source": {
+            "type": "PlatformImage",
+                "publisher": "RedHat",
+                "offer": "RHEL",
+                "sku": "8.1",
+                "version": "latest"
+            
+        },
+        "customize": [
+            {
+                "type": "Shell",
+                "name": "RunScriptFromSource",
+                "scriptUri": "https://raw.githubusercontent.com/danielsollondon/azvmimagebuilder/master/quickquickstarts/customizeScript.sh"
+            },
+
+            {
+                "type": "Shell",
+                "name": "CheckSumCompareShellScript",
+                "scriptUri": "https://raw.githubusercontent.com/danielsollondon/azvmimagebuilder/master/quickquickstarts/customizeScript2.sh",
+                "sha256Checksum": "ade4c5214c3c675e92c66e2d067a870c5b81b9844b3de3cc72c49ff36425fc93"
+            },
+        
+            
+            {
+                "type": "File",
+                "name": "downloadBuildArtifacts",
+                "sourceUri": "https://raw.githubusercontent.com/danielsollondon/azvmimagebuilder/master/quickquickstarts/exampleArtifacts/buildArtifacts/index.html",
+                "destination":"/tmp/index.html"
+            },
+
+            {
+                "type": "Shell",
+                "name": "setupBuildPath",
+                "inline": [
+                    "sudo mkdir /buildArtifacts",
+                    "sudo cp /tmp/index.html /buildArtifacts/index.html"
+                ]
+            },
+
+            {
+                "type": "Shell",
+                "name": "InstallUpgrades",
+                "inline": [
+                    "#-tooslow? sudo yum update"
+                ]
+            }
+        ],
+        "distribute": 
+        [
+            {   
+                "type": "SharedImage",
+                "galleryImageId": "/subscriptions/cf385b17-bfe0-4a92-8b27-5a2ac02848d2/resourceGroups/ibLinuxGalleryRG/providers/Microsoft.Compute/galleries/myIbGallery/images/myIbImageDef",
+                "runOutputName": "aibLinuxSIG",
+                "artifactTags": {
+                    "source": "azureVmImageBuilder",
+                    "baseosimg": "rhel81"
+                },
+                "replicationRegions": [
+                  "westus2",
+                  "eastus"
+                ]
+            }
+        ]
+    }
+}
