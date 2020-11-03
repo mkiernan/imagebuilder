@@ -48,7 +48,7 @@ def main():
     interfaceName = "interfaceName"
     networkName = "gridvnet"
     adminUserName = "adminUserName"
-    adminPassword = "Azur3Passw0rd"
+    adminPassword = "<YOUR PASSWORD>"
 
     serverimageName = "redisserverImage"
     clientimageName = "redisclientImage"
