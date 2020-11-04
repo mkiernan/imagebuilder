@@ -37,7 +37,7 @@ export AZURE_CLIENT_SECRET="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 Download the packer executable and build the images: 
 
 ```
-cd packer;./getpacker.sh; ./dopacker.sh
+cd packer; ./getpacker.sh; ./dopacker.sh
 ```
 
 ### ImageBuilder Instructions
@@ -45,8 +45,7 @@ cd packer;./getpacker.sh; ./dopacker.sh
 Imagebuilder embeds packer in the service; build the images as follows: 
 
 ```
-cd imagebuilder
-./buildimage.sh
+cd imagebuilder; ./buildimage.sh
 ```
 
 ### Manual Image Build Instructions
