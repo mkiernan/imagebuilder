@@ -68,4 +68,4 @@ Wait for the images to be created, and then deploy with either the azure cli scr
 or the python script (they both do the same thing): 
 ```
 python3 createvmss.py
-``
+```
