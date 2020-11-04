@@ -12,7 +12,7 @@
       "os_type": "Linux",
       "image_publisher": "RedHat",
       "image_offer": "RHEL",
-      "image_sku": "8.1",
+      "image_sku": "8.2",
 
       "ssh_pty": "true", 
 
