@@ -2,13 +2,9 @@
 
 Code examples for automating deployment of a simple grid with RHEL 8.2 + Redis using custom images. 
 
-Three image creation methods are provided. The recommended options are packer or imagebuilder: 
+Three image creation methods are provided: <a href="https://www.packer.io/">Packer</a>, <a href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/image-builder-overview">ImageBuilder</a>, and <a href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/tutorial-custom-images">interactive.</a>.  
 
-1. packer -> build with <a href="https://www.packer.io/">packer</a>
-2. imagebuilder -> build with <a href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/image-builder-overview">Azure ImageBuilder</a>
-3. manual -> build image with a manual <a href="https://docs.microsoft.com/en-us/azure/virtual-machines/linux/tutorial-custom-images">procedure</a>.
-
-Azure cli scripts & python code is also provided to deploy the images as simple redis server vm + client vmss
+Azure CLI scripts and equivalent python API code is also provided to deploy the images as simple redis server vm + client vmss
 
 Clone the repo with: https://github.com/mkiernan/imagebuilder.git.
 
@@ -48,9 +44,9 @@ Imagebuilder embeds packer in the service; build the images as follows:
 cd imagebuilder; ./buildimage.sh
 ```
 
-### Manual Image Build Instructions
+### Interactive Image Build Instructions
 
-Build the image by hand by adapting the example provided: 
+Build the image interactively by adapting the example provided: 
 
 ```
 ./buildimage_trad.sh
