@@ -6,7 +6,7 @@ Three image creation methods are provided: <a href="https://www.packer.io/">Pack
 
 Azure CLI scripts and equivalent python API code is also provided to deploy the images as simple redis server vm + client vmss
 
-Clone the repo with: https://github.com/mkiernan/imagebuilder.git.
+Clone the repo with: git clone https://github.com/mkiernan/imagebuilder.git.
 
 ## Part 1: Prepare your environment 
 
