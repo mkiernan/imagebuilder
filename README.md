@@ -1,6 +1,6 @@
 # Azure Image Builder & Packer examples for Grid Computing
 
-This repo provides example code for automating deployment of a simple grid with RHEL 8.2 + Redis using custom images. 
+Code examples for automating deployment of a simple grid with RHEL 8.2 + Redis using custom images. 
 
 Three image creation methods are provided. The recommended options are packer or imagebuilder: 
 
@@ -12,7 +12,7 @@ Azure cli scripts & python code is also provided to deploy the images as simple 
 
 Clone the repo with: https://github.com/mkiernan/imagebuilder.git.
 
-# Part 1: Prepare your environment 
+## Part 1: Prepare your environment 
 
 a. Install <a href="https://docs.microsoft.com/en-us/cli/azure/install-azure-cli">azure cli</a>, or utilize <a href="https://shell.azure.com">shell.azure.com</a> 
 
@@ -23,15 +23,16 @@ Follow instructions <a href="https://docs.microsoft.com/en-us/cli/azure/create-a
 c. Set environment variables
 
 Take the output from a. and create environment variables with your service principle + secret
-
+```
 export SUBSCRIPTION_ID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 export AZURE_TENANT_ID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 export AZURE_CLIENT_ID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 export AZURE_CLIENT_SECRET="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+```
 
-# Part 2: Build the Image
+## Part 2: Build the Image
 
-## Packer Image Build Instructions
+### Packer Image Build Instructions
 
 Download the packer executable and build the images: 
 
@@ -39,7 +40,7 @@ Download the packer executable and build the images:
 cd packer;./getpacker.sh; ./dopacker.sh
 ```
 
-## ImageBuilder Instructions
+### ImageBuilder Instructions
 
 Imagebuilder embeds packer in the service; build the images as follows: 
 
@@ -48,7 +49,7 @@ cd imagebuilder
 ./buildimage.sh
 ```
 
-## Manual Image Build Instructions
+### Manual Image Build Instructions
 
 Build the image by hand by adapting the example provided: 
 
@@ -56,9 +57,9 @@ Build the image by hand by adapting the example provided:
 ./buildimage_trad.sh
 ```
 
-# Part 3: Deploy the images 
+## Part 3: Deploy the images 
 
-## Build the infrastructure
+### Build the infrastructure
 
 Wait for the images to be created, and then deploy with either the azure cli script: 
 ```
