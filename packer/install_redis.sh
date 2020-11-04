@@ -22,6 +22,9 @@ fi
 
 clsvr=$1
 
+#- needed for setup.py unless performaed in cloudinit
+yum install gcc python3-devel
+pip3 install psutil
 
 dnf module install redis -y
 #echo "vm.overcommit_memory=1" > /etc/sysctl.conf
