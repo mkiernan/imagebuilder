@@ -1,7 +1,10 @@
 #cloud-config
-package_upgrade: true
+
 packages:
-  - httpd
+# - git
+# - epel-release
+# - htop
 
 runcmd:
-  - /opt/setup.py
+ - [ yum, "-y", install, "jq" ]
+ - [ python3, "/opt/setup.py" ]

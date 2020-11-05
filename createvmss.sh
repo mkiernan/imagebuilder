@@ -52,7 +52,7 @@ az vmss create \
   --vnet-name gridvnet \
   --subnet compute \
   --ppg gridppg \
-  #--custom-data cloud-init.txt \
+  --custom-data cloud-init.txt \
   --generate-ssh-keys
 
 # harvest the public ip address
