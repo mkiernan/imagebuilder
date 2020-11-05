@@ -5,6 +5,9 @@
 # import global variables
 source header.sh
 
+# resource group
+az group create -n $gridResourceGroup -l $location
+
 # create infra
 # virtual network 
 az network vnet create \

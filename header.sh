@@ -1,7 +1,8 @@
 #!/bin/bash -x
 
-# Resource group name - we are using ibLinuxGalleryRG in this example
-gridResourceGroup=mkimagegrp
+# Resource group name
+imageResourceGroup=mkimagegrp
+gridResourceGroup=mktmpgrp
 
 # Datacenter location - we are using West US 2 in this example
 location=westus2
@@ -10,10 +11,10 @@ location=westus2
 additionalregion=eastus
 
 # IMAGEBUILDER or PACKER IMAGE string here:
-#IMAGE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$gridResourceGroup/providers/Microsoft.Compute/galleries/$sigName/images/$imageDefName/versions/latest"
+#IMAGE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$imageResourceGroup/providers/Microsoft.Compute/galleries/$sigName/images/$imageDefName/versions/latest"
 # Packer image strings: 
-REDISSERVERIMAGE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$gridResourceGroup/providers/Microsoft.Compute/images/redisserverImage"
-REDISCLIENTIMAGE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$gridResourceGroup/providers/Microsoft.Compute/images/redisclientImage"
+REDISSERVERIMAGE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$imageResourceGroup/providers/Microsoft.Compute/images/redisserverImage"
+REDISCLIENTIMAGE="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$imageResourceGroup/providers/Microsoft.Compute/images/redisclientImage"
 
 # name of the shared image gallery - in this example we are using myGallery
 sigName=GridIbGallery
@@ -29,7 +30,7 @@ runOutputName=aibLinuxSIG
 identityName=aibBuiUserMK
 
 # get the user identity URI, needed for the template
-imgBuilderId=/subscriptions/$SUBSCRIPTION_ID/resourcegroups/$gridResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/$identityName
+imgBuilderId=/subscriptions/$SUBSCRIPTION_ID/resourcegroups/$imageResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/$identityName
 
 # create image definition name
 #imageRoleDefName="AzureImageBuilderImageDef"$(date +'%s')

@@ -4,11 +4,11 @@
 source header.sh
 
 # get identity id
-imgBuilderCliId=$(az identity show -g $gridResourceGroup -n $identityName | grep "clientId" | cut -c16- | tr -d '",')
+imgBuilderCliId=$(az identity show -g $imageResourceGroup -n $identityName | grep "clientId" | cut -c16- | tr -d '",')
 
 # delete image builder template
 az resource delete \
-    --resource-group $gridResourceGroup \
+    --resource-group $imageResourceGroup \
     --resource-type Microsoft.VirtualMachineImages/imageTemplates \
     -n RHELImageTemplateSIG
 
@@ -16,7 +16,7 @@ az resource delete \
 az role assignment delete \
     --assignee $imgBuilderCliId \
     --role "$imageRoleDefName" \
-    --scope /subscriptions/$subscriptionID/resourceGroups/$gridResourceGroup
+    --scope /subscriptions/$subscriptionID/resourceGroups/$imageResourceGroup
 
 az role definition delete --name "$imageRoleDefName"
 
@@ -25,13 +25,13 @@ az identity delete --ids $imgBuilderId
 # Get the image version created by image builder, this always starts with 0.,
 # and then delete the image version
 sigDefImgVersion=$(az sig image-version list \
-   -g $gridResourceGroup \
+   -g $imageResourceGroup \
    --gallery-name $sigName \
    --gallery-image-definition $imageDefName \
    --subscription $subscriptionID --query [].'name' -o json | grep 0. | tr -d '"'| head -1 | tr -d ',' )
 
 az sig image-version delete \
-   -g $gridResourceGroup \
+   -g $imageResourceGroup \
    --gallery-image-version $sigDefImgVersion \
    --gallery-name $sigName \
    --gallery-image-definition $imageDefName \
@@ -39,27 +39,27 @@ az sig image-version delete \
 
 # delete the image definition
 az sig image-definition delete \
-   -g $gridResourceGroup \
+   -g $imageResourceGroup \
    --gallery-name $sigName \
    --gallery-image-definition $imageDefName \
    --subscription $subscriptionID
 
 # delete the gallery
-az sig delete -r $sigName -g $gridResourceGroup
+az sig delete -r $sigName -g $imageResourceGroup
 
 # delete the vm
-az vm delete --name redisservervm --resource-group $gridResourceGroup -y
-az vm delete --name Golden01 --resource-group $gridResourceGroup -y
-az vm delete --name TestVM --resource-group $gridResourceGroup -y
+az vm delete --name redisservervm --resource-group $imageResourceGroup -y
+az vm delete --name Golden01 --resource-group $imageResourceGroup -y
+az vm delete --name TestVM --resource-group $imageResourceGroup -y
 
 # delete the vmss
-az vmss delete --name gridvmss  --resource-group $gridResourceGroup
+az vmss delete --name gridvmss  --resource-group $imageResourceGroup
 
 # delete the ppg
-az ppg delete --name gridppg --resource-group $gridResourceGroup
+az ppg delete --name gridppg --resource-group $imageResourceGroup
 
 # delete the vnet
-az network vnet delete --name gridvnet --resource-group $gridResourceGroup
+az network vnet delete --name gridvnet --resource-group $imageResourceGroup
 
 # delete the resources group
-az group delete -n $gridResourceGroup -y
+az group delete -n $imageResourceGroup -y

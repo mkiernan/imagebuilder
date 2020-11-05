@@ -7,4 +7,6 @@ packages:
 
 runcmd:
  - [ yum, "-y", install, "jq" ]
- - [ python3, "/opt/setup.py" ]
+
+bootcmd:
+ - [ python3, "/opt/startup.py", ">" , "/tmp/cpucount.txt" ]

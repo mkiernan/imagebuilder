@@ -4,7 +4,7 @@
 source header.sh
 
 # resource group
-az group create -n $gridResourceGroup -l $location
+az group create -n $imageResourceGroup -l $location
 
 # create golden image
 # To get the latest list run:
@@ -12,7 +12,7 @@ az group create -n $gridResourceGroup -l $location
 imageUrn="RedHat:RHEL:8.1:8.1.2020082711"
 az vm create \
  --name Golden01 \
- --resource-group $gridResourceGroup \
+ --resource-group $imageResourceGroup \
  --location $location \
  --image  $imageUrn \
  --size Standard_DS2_v2 \
@@ -26,10 +26,10 @@ echo "VM is ready: ssh azureuser@$ip"
 echo "Login and customize your VM, then run the following manual steps:"
 echo "sudo waagent -deprovision+user"
 echo "logout"
-echo "az vm deallocate --resource-group $gridResourceGroup --name Golden01"
-echo "az vm generalize --resource-group $gridResourceGroup --name Golden01"
-echo "az image create --resource-group $gridResourceGroup --name GoldenImage --source Golden01"
+echo "az vm deallocate --resource-group $imageResourceGroup --name Golden01"
+echo "az vm generalize --resource-group $imageResourceGroup --name Golden01"
+echo "az image create --resource-group $imageResourceGroup --name GoldenImage --source Golden01"
 echo "List images:"
 echo "az image list -o table"
 echo "Then finally create a new VM or VMSS from the image:"
-echo "az vm create --resource-group $gridResourceGroup --name TestVM --image GoldenImage --admin-user azureuser --generate-ssh-keys"
+echo "az vm create --resource-group $imageResourceGroup --name TestVM --image GoldenImage --admin-user azureuser --generate-ssh-keys"

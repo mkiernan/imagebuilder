@@ -22,7 +22,7 @@ fi
 
 clsvr=$1
 
-#- needed for setup.py unless performaed in cloudinit
+#- needed for startup.py unless performaed in cloudinit
 yum install -y gcc python3-devel
 pip3 install psutil
 
