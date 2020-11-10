@@ -7,6 +7,7 @@ import os
 import random
 import string
 import logging
+import base64
 
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.compute import ComputeManagementClient
@@ -42,7 +43,7 @@ def main():
     subscriptionId = os.environ.get("SUBSCRIPTION_ID", None)
     credential = DefaultAzureCredential()
     location = 'westus2'
-    resourceGroupName = "mktmpgrp2"
+    resourceGroupName = "mktmpgrp"
     imageResourceGroupName = "mkimagegrp"
     subnetName = "compute"
     interfaceName = "interfaceName"
@@ -200,6 +201,10 @@ def main():
 #    computeClient.virtual_machines.begin_delete(resourceGroupName, vmName).result()
 #    resourceClient.resource_groups.begin_delete(resourceGroupName).result()
 
+    with open("cloud-init.txt") as f:
+         res = f.read()
+    xstr = base64.b64encode(res.encode('utf-8')).decode('ascii')
+
     vmssDict = {
         "location": "westus2",
         "overprovision": True,
@@ -207,7 +212,12 @@ def main():
         "sku": {"name": "Standard_D2_v2", "tier": "Standard", "capacity": vmssInstances},
         "virtual_machine_profile": {
             "storage_profile": {"image_reference": {"id": clientimageReferenceId}},
-            "os_profile": {"computer_name_prefix": vmssName, "admin_username": adminUserName, "admin_password": adminPassword},
+            "os_profile": {
+                "computer_name_prefix": vmssName,
+                "admin_username": adminUserName,
+                "admin_password": adminPassword,
+                "custom_data": xstr 
+            },
             "network_profile": {"network_interface_configurations": [{
                 "name": "vmssnic",
                 "primary": True,
@@ -225,6 +235,7 @@ def main():
             }
         }
     }
+
     vmss = computeClient.virtual_machine_scale_sets.begin_create_or_update(
         resourceGroupName, vmssName, vmssDict).result()
     
