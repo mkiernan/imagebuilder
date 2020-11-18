@@ -8,6 +8,7 @@ import random
 import string
 import logging
 import base64
+import time
 
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.compute import ComputeManagementClient
@@ -40,9 +41,12 @@ def createComputeClient(subscriptionId, credential):
 def main():
     # Assumes that these environment variables are set SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET
 
+    #-- register the task absolute start time (for 3.7 use time.time_ns())
+    launch=time.time()
+
     subscriptionId = os.environ.get("SUBSCRIPTION_ID", None)
     credential = DefaultAzureCredential()
-    location = 'westus2'
+    location = 'southcentralus'
     resourceGroupName = "mktmpgrp"
     imageResourceGroupName = "mkimagegrp"
     subnetName = "compute"
@@ -62,13 +66,13 @@ def main():
 
     resourceClient = createResourceClient(subscriptionId, credential)
 
-    resourceDict = {'location': 'westus2'}
+    resourceDict = {'location': location}
     resourceClient.resource_groups.create_or_update(
         resourceGroupName, resourceDict)
 
     networkClient = createNetworkClient(subscriptionId, credential)
 
-    vnetDict = {'location': 'westus2', 'address_space': {
+    vnetDict = {'location': location, 'address_space': {
         'address_prefixes': ['10.0.0.0/16']}}
     vnet = networkClient.virtual_networks.begin_create_or_update(
         resourceGroupName, networkName, vnetDict).result()
@@ -95,12 +99,12 @@ def main():
     logger.debug("NSG: %s" % nsg)
     logger.debug("NSG.id: %s" % nsg.id)
 
-    publicIpDict = {"location": 'westus2', "public_ip_allocation_method": "Static",
+    publicIpDict = {"location": location, "public_ip_allocation_method": "Static",
                     "public_ip_address_version": "IPV4", "sku": {"name": "Standard"}}
     publicIp = networkClient.public_ip_addresses.begin_create_or_update(
         resourceGroupName, "public_ip_address_name", publicIpDict).result()
 
-    nicDict = {'location': 'westus2',
+    nicDict = {'location': location,
                'ip_configurations': [{
                    'name': 'ipconfig', 'subnet': {'id': subnet.id}, 
                    "public_ip_address": {"id": publicIp.id},
@@ -115,7 +119,7 @@ def main():
     logger.debug("NIC:%s" % nic)
 
     # -- create load balancer for vmss
-    lbpublicIpDict = {"location": "westus2", "public_ip_allocation_method": "Static",
+    lbpublicIpDict = {"location": location, "public_ip_allocation_method": "Static",
                       "public_ip_address_version": "IPV4", "sku": {"name": "Standard"}}
 
     lbpublicIp = networkClient.public_ip_addresses.begin_create_or_update(
@@ -156,7 +160,7 @@ def main():
                        "protocol": "Tcp", "idle_timeout_in_minutes": 4,
                        "enable_floating_ip": False, "enable_tcp_reset": False}
 
-    lbDict = {"location": "westus2", "sku": {"name": "Standard"},
+    lbDict = {"location": location, "sku": {"name": "Standard"},
              #"front_end_ip_configurations": [frontendIpConf],
               "frontendIPConfigurations": [frontendIpConf],
               "backend_address_pools": [backendAddrPool],
@@ -185,17 +189,21 @@ def main():
         subscriptionId, imageResourceGroupName, clientimageName)
 
     vmDict = {
-        "location": "westus2",
+        "location": location,
         "hardware_profile": {"vm_size": "Standard_D2_v2"},
         "storage_profile": {"image_reference": {"id": serverimageReferenceId}},
         #       "storage_profile":{"image_reference": { "publisher": 'Canonical',"offer": "UbuntuServer", "sku": "16.04.0-LTS", "version": "latest"}},
         "os_profile": {"computer_name": vmName, "admin_username": adminUserName, "admin_password": adminPassword},
         "network_profile": {"network_interfaces": [{"id": nic.id}]},
     }
-
+    start=time.perf_counter()
     vm = computeClient.virtual_machines.begin_create_or_update(
         resourceGroupName, vmName, vmDict).result()
+    end=time.perf_counter()
+    timedelta=end-start
     print("VM:%s" % vm)
+    print("VM Provision Time: {}",timedelta)
+    
 
 #    computeClient.virtual_machines.begin_power_off(resourceGroupName, vmName).result()
 #    computeClient.virtual_machines.begin_delete(resourceGroupName, vmName).result()
@@ -206,12 +214,15 @@ def main():
     xstr = base64.b64encode(res.encode('utf-8')).decode('ascii')
 
     vmssDict = {
-        "location": "westus2",
+        "location": location,
         "overprovision": True,
         "upgrade_policy": {"mode": "Manual"},
-        "sku": {"name": "Standard_D2_v2", "tier": "Standard", "capacity": vmssInstances},
+        "sku": {"name": "Standard_HB120rs_v2", "tier": "Standard", "capacity": vmssInstances},
         "virtual_machine_profile": {
             "storage_profile": {"image_reference": {"id": clientimageReferenceId}},
+            "priority": "Spot",
+            "eviction_policy": "Delete",
+            "billing_profile": {"max_price": -1 },
             "os_profile": {
                 "computer_name_prefix": vmssName,
                 "admin_username": adminUserName,
@@ -221,7 +232,7 @@ def main():
             "network_profile": {"network_interface_configurations": [{
                 "name": "vmssnic",
                 "primary": True,
-                "enable_accelerated_networking": True,
+                "enable_accelerated_networking": False,
                 "network_security_group": {"id": nsg.id},
                 "ip_configurations": [{
                     "name": "vmssipconfig",
@@ -236,11 +247,13 @@ def main():
         }
     }
 
+    start=time.perf_counter()
     vmss = computeClient.virtual_machine_scale_sets.begin_create_or_update(
         resourceGroupName, vmssName, vmssDict).result()
-    
+    end=time.perf_counter()
+    timedelta=end-start
     print("vmss: {}".format(vmss))
-
+    print("VMSS Provision Time: {}",timedelta)
 
 if __name__ == "__main__":
     main()

@@ -21,8 +21,8 @@
           "task": "Image deployment"
       },
 
-      "location": "WestUS2",
-      "vm_size": "Standard_DS2_v2"
+      "location": "SouthCentralUS",
+      "vm_size": "Standard_HB120rs_v2"
   }],
   "provisioners": [
       {
@@ -32,7 +32,7 @@
       },
       {
           "type": "file",
-          "source": "startup.py", 
+          "source": "../startup.py", 
           "destination": "/tmp/startup.py"
       },
       {

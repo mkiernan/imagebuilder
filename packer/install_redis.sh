@@ -38,4 +38,21 @@ if [ $clsvr = "server" ]; then
 fi
 #systemctl start redis
 #systemctl status redis
+
+#- install eviction checker for spot 
+
+cat << EOF > /etc/systemd/system/evictchecker.service
+[Unit]
+Description=Azure Spot Eviction Checker
+After=multi-user.target
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/python3 /usr/local/bin/evictchecker.py
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable evictchecker
+
 echo done
